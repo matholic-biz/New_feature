@@ -1,0 +1,16 @@
+# 넷틀리파이 배포 설정 (단일 HTML 정적 사이트)
+# 빌드 과정 없음 — 이 폴더를 그대로 올립니다.
+
+[build]
+  publish = "."
+
+# 정적 파일 캐시 (이미지만 오래 캐시, HTML은 항상 최신)
+[[headers]]
+  for = "/*.html"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+  for = "/images/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"

@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>AI 서술형 첨삭 | 매쓰홀릭</title>
+<meta name="description" content="원생별 이해도 만큼 천차만별인 풀이과정, AI가 채점부터 분석까지 한 번에 해결합니다." />
+
+<!-- ===== OG (카톡·슬랙 공유 미리보기) — 배포 후 URL/이미지 교체 ===== -->
+<meta property="og:type" content="website" />
+<meta property="og:title" content="AI 서술형 첨삭 | 매쓰홀릭" />
+<meta property="og:description" content="서술형 채점은 쉽게, 정확하게, 한 번에. 매쓰홀릭으로." />
+<meta property="og:image" content="images/og-image.png" />
+<meta property="og:url" content="https://REPLACE-ME.netlify.app/" />
+
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+
+<style>
+/* ============================================================
+   1. 디자인 토큰  —  색·간격·폰트 크기를 여기서만 바꾸면 전체 반영
+   ============================================================ */
+:root{
+  /* 브랜드 컬러 */
+  --primary:        #6265FF;   /* 메인 퍼플블루 */
+  --primary-deep:   #4F52E8;   /* 버튼 눌림·호버용 */
+  --primary-soft:   #C3BFF9;   /* 연한 퍼플 (다이어그램 박스) */
+  --ink:            #0C0E16;   /* 다크 배경 */
+  --ink-2:          #3234AB;   /* 다크 그라데이션 아래쪽 */
+
+  /* 그레이 스케일 */
+  --bg-1:           #F3F3F3;   /* 홀수 섹션 배경 */
+  --bg-2:           #EBEBEB;   /* 짝수 섹션 배경 */
+  --card:           #FFFFFF;
+  --text:           #111318;
+  --text-sub:       #4B5563;
+  --text-mute:      #9CA3AF;
+  --note:           #3B82F6;   /* "! 안내문" 파란색 */
+
+  /* 그라데이션 */
+  --grad-hero:      linear-gradient(180deg, var(--ink) 34%, var(--ink-2) 185%);
+  --grad-brand:     linear-gradient(148deg, #5D8AFF 15%, #9D7AFF 94%);
+  --grad-btn:       linear-gradient(152deg, #356CFA 15%, #7049DC 94%);
+
+  /* 레이아웃 */
+  --page-max:      1440px;   /* 콘텐츠 최대 폭 */
+  --gutter:        clamp(20px, 5vw, 96px);
+  --radius-card:   clamp(16px, 1.6vw, 24px);
+  --radius-pill:   999px;
+
+  /* 타이포 (피그마 2355px 기준을 1440px 기준으로 환산) */
+  --fs-h1:         clamp(32px, 4.4vw, 62px);
+  --fs-h2:         clamp(26px, 2.9vw, 42px);
+  --fs-h3:         clamp(22px, 2.4vw, 34px);
+  --fs-eyebrow:    clamp(17px, 1.9vw, 28px);
+  --fs-body:       clamp(15px, 1.35vw, 20px);
+  --fs-badge:      clamp(14px, 1.2vw, 18px);
+  --fs-note:       clamp(12px, 0.9vw, 14px);
+}
+
+/* ============================================================
+   2. 리셋 & 기본
+   ============================================================ */
+*,*::before,*::after{ box-sizing:border-box; }
+html{ scroll-behavior:smooth; -webkit-text-size-adjust:100%; }
+body{
+  margin:0;
+  font-family:"Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont,
+              system-ui, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  color:var(--text);
+  background:var(--bg-1);
+  line-height:1.5;
+  word-break:keep-all;      /* 한글 단어 단위 줄바꿈 */
+  overflow-x:hidden;
+}
+img{ max-width:100%; display:block; }
+p{ margin:0; }
+h1,h2,h3{ margin:0; font-weight:700; letter-spacing:-0.02em; }
+a{ color:inherit; text-decoration:none; }
+
+.wrap{
+  width:100%;
+  max-width:var(--page-max);
+  margin-inline:auto;
+  padding-inline:var(--gutter);
+}
+
+/* ============================================================
+   3. 공통 컴포넌트
+   ============================================================ */
+
+/* 흰 알약 배지 (압도적 시간 단축 / AI 답안 상세 분석 …) */
+.badge{
+  display:inline-flex; align-items:center; justify-content:center;
+  padding:clamp(6px,.6vw,10px) clamp(14px,1.3vw,22px);   /* 배지 여백 */
+  background:var(--card);
+  color:var(--primary);
+  font-size:var(--fs-badge); font-weight:700;
+  border-radius:var(--radius-pill);
+  box-shadow:0 2px 10px rgba(12,14,22,.05);
+}
+/* 그라데이션 배지 (PREMIUM) */
+.badge--grad{
+  background:var(--grad-btn);
+  color:#fff;
+  text-transform:uppercase;
+  letter-spacing:-0.01em;
+  box-shadow:none;
+}
+/* 작은 배지 — 옆 텍스트 높이에 맞춤 */
+.badge--sm{
+  padding:.34em 1em;
+  font-size:calc(var(--fs-eyebrow) * 0.56);
+  line-height:1.25;
+}
+
+/* 메인 CTA 버튼 */
+.btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:.4em;
+  padding:clamp(14px,1.4vw,22px) clamp(28px,3.2vw,56px);
+  background:var(--grad-btn);
+  color:#fff;
+  font-size:clamp(15px,1.5vw,22px); font-weight:600;
+  border:0; border-radius:var(--radius-pill);
+  cursor:pointer;
+  transition:transform .18s ease, box-shadow .18s ease;
+}
+.btn:hover{ transform:translateY(-2px); box-shadow:0 12px 28px rgba(98,101,255,.35); }
+
+/* 그라데이션 텍스트 */
+.grad-text{
+  background:var(--grad-brand);
+  -webkit-background-clip:text; background-clip:text;
+  color:transparent;
+}
+.hl{ color:var(--primary); }   /* 본문 중 강조 */
+
+/* 목업 플레이스홀더 (나중에 <img>로 교체) */
+.mockup{
+  position:relative;
+  width:100%;
+  aspect-ratio:1448 / 888;          /* 피그마 카드 비율 */
+  background:var(--card);
+  border-radius:clamp(18px,2.4vw,35px);
+  box-shadow:0 18px 50px rgba(12,14,22,.07);
+  display:grid; place-items:center;
+  overflow:hidden;
+}
+.mockup::after{
+  content:attr(data-label);
+  color:#C9CBD4; font-size:var(--fs-badge); font-weight:600;
+  letter-spacing:.02em; text-align:center; padding:0 1em;
+  white-space:pre-line; line-height:1.7;
+}
+.mockup img{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+
+/* ============================================================
+   4. 히어로
+   ============================================================ */
+.hero{
+  background:var(--grad-hero);
+  background-color:var(--ink);
+  color:#fff;
+  text-align:center;
+  padding:clamp(72px,9vw,150px) 0 clamp(80px,10vw,160px);
+}
+.hero__eyebrow{
+  display:flex; align-items:center; justify-content:center;
+  gap:clamp(10px,1.3vw,22px);
+  margin-bottom:clamp(28px,3.6vw,60px);
+  flex-wrap:wrap;
+}
+.hero__eyebrow-text{ font-size:var(--fs-eyebrow); font-weight:500; line-height:1.25; }
+
+/* 3줄 헤드라인
+   [       ] 쉽게     [        ]
+   서술형 채점은  정확하게  매쓰홀릭으로   ← 가운데 줄만 크고 진하게
+   [       ] 한 번에  [        ]
+   가운데 자리에 오는 단어가 2.2초마다 바뀝니다.                     */
+.headline{
+  display:grid;
+  grid-template-columns:1fr auto 1fr;
+  align-items:center;
+  gap:0 clamp(16px,2.6vw,52px);       /* 가운데 단어 ↔ 양옆 텍스트 간격 */
+  font-size:var(--fs-h1);
+  font-weight:700;
+  line-height:1.15;
+}
+.headline__left { text-align:right; white-space:nowrap; }
+.headline__right{ text-align:left;  white-space:nowrap; }
+
+/* ---- 롤링 워드 (쉽게 / 정확하게 / 한 번에) ---- */
+.rotator{
+  --line:calc(var(--fs-h1) * 1.44);   /* 한 칸 높이 — 중앙 단어가 커진 만큼 여유 */
+  position:relative;
+  height:calc(var(--line) * 3);
+  /* 커진 글자가 좌우로 잘리지 않도록 여유 폭 확보 */
+  padding-inline:calc(var(--fs-h1) * 0.35);
+  overflow:hidden;
+  /* 위·아래 끝을 살짝 흐리게 */
+  -webkit-mask-image:linear-gradient(180deg, rgba(0,0,0,.25) 0%, #000 30%, #000 70%, rgba(0,0,0,.25) 100%);
+          mask-image:linear-gradient(180deg, rgba(0,0,0,.25) 0%, #000 30%, #000 70%, rgba(0,0,0,.25) 100%);
+}
+.rotator__list{
+  list-style:none; margin:0; padding:0;
+  transition:transform .62s cubic-bezier(.22,.61,.36,1);
+}
+.rotator__item{
+  height:var(--line);
+  display:grid; place-items:center;
+}
+.rotator__item > span{
+  display:block;
+  white-space:nowrap;
+  padding:0 .08em;                    /* 그라데이션 글자 잘림 방지 */
+  background:var(--grad-brand);
+  -webkit-background-clip:text; background-clip:text;
+  color:transparent;
+  /* 중앙이 아닐 때: 작고 흐리게 */
+  opacity:.35;
+  transform:scale(.82);
+  transition:opacity .5s ease, transform .62s cubic-bezier(.22,.61,.36,1);
+}
+/* 중앙에 온 단어: 크고 진하게 (피그마 80px ≒ scale 1.3) */
+.rotator__item.is-center > span{
+  opacity:1;
+  transform:scale(1.3);
+}
+
+.hero__sub{
+  margin:clamp(28px,3.4vw,56px) auto 0;
+  font-size:clamp(15px,1.5vw,22px); font-weight:500;
+  color:rgba(255,255,255,.8);
+  line-height:1.6;
+}
+.hero__cta{ margin-top:clamp(32px,4vw,64px); }
+
+/* ============================================================
+   5. 기능 섹션 (좌측 텍스트 + 우측 목업)
+   ============================================================ */
+.feature{ padding:clamp(64px,8vw,130px) 0; background:#F8F8F8; overflow:hidden; }
+/* 02·04 — 히어로 블루톤(롤링 텍스트 그라데이션 시작색 #5D8AFF)에서 뽑은 연한 배경, 두 섹션 동일 적용 */
+.feature--alt{ background:#EAF1FF; }
+
+/* 목업 카드는 피그마처럼 화면 오른쪽 끝을 넘어가 잘립니다.
+   - 앞의 두 항: 가운데 정렬된 본문 영역에서 화면 오른쪽 끝까지의 거리
+   - 마지막 8vw: 화면 밖으로 더 나가는(잘리는) 양 — 이 숫자만 조절하세요.
+   안쪽으로 얌전히 넣고 싶으면 이 블록을 통째로 지우면 됩니다. */
+@media (min-width:861px){
+  .feature__media{
+    width:calc(100%
+      + max(0px, (100vw - var(--page-max)) / 2)
+      + var(--gutter)
+      + 8vw);
+    max-width:none;
+  }
+}
+
+.feature__inner{
+  display:grid;
+  grid-template-columns:minmax(0,0.82fr) minmax(0,1fr);
+  gap:clamp(32px,4vw,72px);
+  align-items:center;
+}
+/* 02. AI 답안 상세 분석 이미지 — 살짝 왼쪽으로 이동 */
+.feature__shot--02{ transform:translateX(clamp(-40px,-3.4vw,-18px)); }
+.feature__copy{ display:flex; flex-direction:column; align-items:flex-start; gap:clamp(16px,1.8vw,28px); }
+.feature__title{ font-size:var(--fs-h2); line-height:1.3; }
+.feature__desc{ font-size:var(--fs-body); font-weight:500; color:var(--text-sub); line-height:1.75; }
+/* 포인트 안내 문구 — 동그란 ! 아이콘 + 연한 배경 칩 */
+.feature__note{
+  display:inline-flex; align-items:center; gap:.6em;
+  padding:.5em 1em .5em .5em;
+  background:rgba(59,130,246,.1);
+  border-radius:var(--radius-pill);
+  font-size:clamp(13px,1vw,16px); font-weight:600;
+  color:var(--note);
+  line-height:1.45;
+}
+.feature__note-icon{
+  flex:none;
+  width:1.6em; height:1.6em;
+  display:grid; place-items:center;
+  background:var(--note); color:#fff;
+  border-radius:50%;
+  font-size:.85em; font-weight:800; line-height:1;
+}
+
+/* ---- 프로세스 다이어그램 (섹션 1) ---- */
+.flow{ width:100%; margin-top:clamp(8px,1vw,16px); }
+.flow__labels{
+  display:grid; grid-template-columns:2fr 3fr; gap:clamp(8px,1vw,18px);
+  text-align:center;
+  font-size:var(--fs-badge); font-weight:600; color:var(--primary);
+  margin-bottom:6px;
+}
+.flow__bracket{ display:block; position:relative; height:10px; }
+/* 가로선은 위, 양끝 다리는 아래(박스 쪽)로 내려옵니다 */
+.flow__bracket::before{
+  content:""; position:absolute; inset:0 0 auto 0; height:1px; background:var(--primary);
+}
+.flow__bracket::after{
+  content:""; position:absolute; left:0; right:0; top:0; height:8px;
+  border-left:1px solid var(--primary); border-right:1px solid var(--primary);
+}
+.flow__steps{ display:grid; grid-template-columns:repeat(5,1fr); gap:clamp(6px,.9vw,16px); margin-top:10px; }
+.flow__step{
+  aspect-ratio:126 / 120;
+  border-radius:10px;
+  display:grid; place-items:center;
+  text-align:center;
+  font-size:clamp(12px,1.25vw,18px); font-weight:500;
+  color:var(--text-mute);
+  padding:4px;
+}
+.flow__step:nth-child(1){ background:rgba(195,191,249,.15); }
+.flow__step:nth-child(2){ background:rgba(195,191,249,.25); }
+.flow__step:nth-child(3){ background:rgba(195,191,249,.40); color:var(--text); }
+.flow__step:nth-child(4){ background:rgba(195,191,249,.60); color:var(--text); }
+.flow__step:nth-child(5){ background:var(--primary-soft);    color:var(--text); }
+
+/* ============================================================
+   6. 다크 CTA 배너
+   ============================================================ */
+.band{
+  background:var(--grad-hero);
+  background-color:var(--ink);
+  color:#fff; text-align:center;
+  padding:clamp(80px,10vw,170px) 0;
+}
+.band__title{ font-size:clamp(24px,3.3vw,46px); line-height:1.35; }
+.band__sub{ margin-top:clamp(16px,2vw,36px); font-size:clamp(18px,2.5vw,36px); font-weight:500; }
+
+/* ============================================================
+   7. 신청 폼 섹션
+   ============================================================ */
+.apply{ background:#EAF1FF; padding:clamp(64px,8vw,130px) 0 clamp(80px,9vw,150px); text-align:center; }
+.apply__title{ font-size:clamp(24px,3.3vw,46px); line-height:1.35; }
+.apply__sub{ margin-top:clamp(16px,2vw,32px); font-size:var(--fs-body); font-weight:500; color:var(--text-sub); line-height:1.7; }
+
+/* 타입폼 임베드 */
+.form-embed{
+  position:relative;
+  max-width:900px;
+  margin:clamp(36px,4.5vw,72px) auto 0;
+  background:var(--card);
+  border-radius:clamp(16px,2vw,28px);
+  box-shadow:0 18px 50px rgba(12,14,22,.07);
+  overflow:hidden;
+}
+/* ▼ 폼 높이 — 실제 폼을 띄워 재본 값입니다.
+   빈 공간이 남으면 줄이고, 폼 안쪽에 스크롤바가 생기면 키우세요. */
+.form-embed [data-tf-widget]{
+  height:940px;
+  /* 폼 맨 위의 초록 진행률 표시줄(약 3px)을 잘라내기 위해 위로 당김.
+     타입폼 옵션으로는 안 지워지는 요소라 이렇게 가립니다. */
+  margin-top:-12px;
+}
+@media (max-width:860px){
+  .form-embed [data-tf-widget]{ height:1020px; }  /* 모바일은 세로로 길어짐 */
+}
+.form-embed iframe{ display:block; border:0; }
+
+/* 'Powered by Typeform' 버튼 클릭 차단 — 투명한 막을 로고 자리에만 덮습니다.
+   PC는 오른쪽 아래(제출 버튼은 왼쪽이라 무관), 모바일은 제출 버튼 아래 띠. */
+.form-embed::after{
+  content:"";
+  position:absolute; right:0; bottom:0; z-index:2;
+  width:280px; height:110px;
+  background:transparent;
+  cursor:default;
+}
+@media (max-width:860px){
+  .form-embed::after{ left:0; width:auto; height:42px; }
+}
+
+/* 푸터 */
+.footer{background:#F4F5F8;padding:70px 0 120px;width:100%;}
+.footer__inner{max-width:1280px;margin:0 auto;padding-inline:80px;display:flex;flex-direction:column;gap:24px;}
+.footer__logo{display:block;}
+.footer__logo img{height:26px;width:auto;display:block;}
+.footer__hr{height:1px;background:#D7DDE6;width:100%;}
+.footer__contact{display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap;}
+.footer__contact .left{display:flex;gap:24px;align-items:center;flex-wrap:wrap;}
+.fc-item{display:flex;gap:10px;align-items:center;padding-inline:8px;color:#66687A;font-size:16px;font-weight:500;}
+.store-row{display:flex;gap:10px;align-items:center;}
+.store-btn{background:#66687A;color:#fff;border-radius:100px;padding:8px 16px;display:flex;gap:10px;align-items:center;font-size:14px;}
+.footer__bottom{display:flex;align-items:flex-start;justify-content:space-between;gap:24px;flex-wrap:wrap;width:100%;}
+.footer__sns{display:flex;gap:16px;align-items:center;margin-bottom:24px;}
+.footer__sns a{width:30px;height:30px;display:flex;align-items:center;justify-content:center;}
+.footer__corp{display:flex;flex-direction:column;gap:10px;max-width:571px;}
+.footer__corp .name{font-weight:700;font-size:16px;color:#66687A;}
+.footer__corp .meta{display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:14px;font-weight:500;color:#66687A;}
+.footer__corp .meta .div{width:1px;height:16px;background:#D7DDE6;}
+.footer__corp .copy{font-size:14px;font-weight:500;color:#66687A;}
+.footer__policy{display:flex;gap:10px;align-items:center;}
+.footer__policy a{font-weight:700;font-size:14px;color:#66687A;text-decoration:underline;}
+.footer__policy .div{width:1px;height:16px;background:#D7DDE6;}
+
+/* ============================================================
+   8. 모바일 / 태블릿
+   ============================================================ */
+@media (max-width:860px){
+  .headline{ grid-template-columns:1fr; row-gap:clamp(4px,1vw,12px); }
+  .headline__left,.headline__right{ text-align:center; padding:0; }
+
+  .feature__inner{ grid-template-columns:1fr; }
+  .feature__copy{ align-items:flex-start; }
+  .flow__steps{ gap:5px; }
+  .flow__step{ aspect-ratio:1 / 1.1; font-size:12px; }
+
+  .footer__inner{ padding-inline:20px; }
+  .footer__contact,.footer__bottom{ flex-direction:column; align-items:flex-start; }
+  .footer__corp .meta{ font-size:12px; }
+}
+@media (max-width:520px){
+  .hero__sub br{ display:none; }
+}
+
+/* 스크롤 등장 애니메이션 */
+.reveal{ opacity:0; transform:translateY(22px); transition:opacity .7s ease, transform .7s ease; }
+.reveal.is-in{ opacity:1; transform:none; }
+@media (prefers-reduced-motion:reduce){
+  .reveal{ opacity:1; transform:none; transition:none; }
+  html{ scroll-behavior:auto; }
+}
+</style>
+</head>
+<body>
+
+<!-- ============================== HERO ============================== -->
+<header class="hero">
+  <div class="wrap">
+    <div class="hero__eyebrow">
+      <span class="badge badge--grad badge--sm">PREMIUM</span>
+      <span class="hero__eyebrow-text">AI 서술형 첨삭</span>
+    </div>
+
+    <h1 class="headline">
+      <span class="headline__left">서술형 채점은</span>
+
+      <!-- 롤링 워드: 3단어 × 2벌(무한 루프용). 단어를 바꾸려면 두 벌 모두 수정하세요. -->
+      <div class="rotator">
+        <ul class="rotator__list">
+          <li class="rotator__item"><span>쉽게</span></li>
+          <li class="rotator__item"><span>정확하게</span></li>
+          <li class="rotator__item"><span>한 번에</span></li>
+          <li class="rotator__item" aria-hidden="true"><span>쉽게</span></li>
+          <li class="rotator__item" aria-hidden="true"><span>정확하게</span></li>
+          <li class="rotator__item" aria-hidden="true"><span>한 번에</span></li>
+        </ul>
+      </div>
+
+      <span class="headline__right">매쓰홀릭으로</span>
+    </h1>
+
+    <p class="hero__sub">
+      원생별 이해도 만큼 천차만별인 풀이과정<br>
+      AI가 채점부터 분석까지 한 번에 해결합니다.
+    </p>
+
+    <div class="hero__cta">
+      <a class="btn" href="#apply">직접 체험해 보기 →</a>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <!-- ==================== 01. 압도적 시간 단축 ==================== -->
+  <section class="feature">
+    <div class="wrap feature__inner">
+      <div class="feature__copy reveal">
+        <span class="badge">압도적 시간 단축</span>
+        <h2 class="feature__title">선생님의 <span class="hl">1분 1초</span>도 소중해요</h2>
+        <p class="feature__desc">
+          선생님은 문제만 출제하세요.<br>
+          AI가 자동 채점부터 풀이 분석과 첨삭까지 끝내 놓을게요.
+        </p>
+
+        <!-- 선생님 → AI 프로세스 다이어그램 -->
+        <div class="flow">
+          <div class="flow__labels">
+            <span>선생님</span>
+            <span>AI 서술형 첨삭</span>
+          </div>
+          <div class="flow__labels">
+            <span class="flow__bracket"></span>
+            <span class="flow__bracket"></span>
+          </div>
+          <div class="flow__steps">
+            <div class="flow__step">출제</div>
+            <div class="flow__step">답안지<br>업로드</div>
+            <div class="flow__step">채점</div>
+            <div class="flow__step">풀이<br>분석</div>
+            <div class="flow__step">첨삭</div>
+          </div>
+        </div>
+
+        <p class="feature__note">
+          <span class="feature__note-icon" aria-hidden="true">!</span>
+          문제는 내신 빈출 문항 위주로 생성 할 수 있어요
+        </p>
+      </div>
+
+      <div class="feature__media reveal">
+        <div class="mockup" data-label="목업 이미지 자리 · 1448 × 888&#10;images/mockup-01.png"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== 02. AI 답안 상세 분석 ==================== -->
+  <section class="feature feature--alt">
+    <div class="wrap feature__inner">
+      <div class="feature__copy reveal">
+        <span class="badge">AI 답안 상세 분석</span>
+        <h2 class="feature__title"><span class="hl">풀이 과정 전체</span>를 분석해요</h2>
+        <p class="feature__desc">
+          학생 답안을 업로드만 해주세요.<br>
+          풀이 흐름에 따라 부분 채점, 오답 유형까지 분석해 드려요.<br>
+          부분 감점 없는 서술형 만점 훈련이 가능해요.
+        </p>
+      </div>
+      <div class="feature__media reveal">
+        <img class="feature__shot--02" src="images/mockup-02.png" alt="AI 서술형 첨삭 채점 결과 화면">
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== 03. 다인원 원생 채점 ==================== -->
+  <section class="feature">
+    <div class="wrap feature__inner">
+      <div class="feature__copy reveal">
+        <span class="badge">다인원 원생 채점</span>
+        <h2 class="feature__title"><span class="hl">30명 채점</span>도 문제 없어요</h2>
+        <p class="feature__desc">
+          원생 한 명, 한 명 채점하지 않고<br>
+          답안지를 업로드만 하면 30명 자동 전송 완료<br><br>
+          1인 학원 원장님도, 대형학원 선생님의 고민을 덜어드려요.
+        </p>
+      </div>
+      <div class="feature__media reveal">
+        <div class="mockup" data-label="목업 이미지 자리 · 1448 × 888&#10;images/mockup-03.png"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== 04. OMR 답안지 생성 ==================== -->
+  <section class="feature feature--alt">
+    <div class="wrap feature__inner">
+      <div class="feature__copy reveal">
+        <span class="badge">OMR 답안지 생성</span>
+        <h2 class="feature__title"><span class="hl">실제 학교 시험</span>처럼</h2>
+        <p class="feature__desc">
+          실전에서 당황하지 않고 풀어야 하니까.<br>
+          학교 시험지와 같은 학습지와 OMR 답안지를 생성해서<br>
+          서술형 감각을 키울 수 있어요.
+        </p>
+        <p class="feature__note">
+          <span class="feature__note-icon" aria-hidden="true">!</span>
+          손글씨 답안도 사진 한 장이면 채점돼요
+        </p>
+      </div>
+      <div class="feature__media reveal">
+        <div class="mockup" data-label="목업 이미지 자리 · 1448 × 888&#10;images/mockup-04.png"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== 다크 CTA 배너 ==================== -->
+  <section class="band">
+    <div class="wrap reveal">
+      <h2 class="band__title">실제 학교 시험 처럼 내신 대비 하세요.</h2>
+      <p class="band__sub">복잡한 건, 매쓰홀릭이 할게요.</p>
+    </div>
+  </section>
+
+  <!-- ==================== 신청 폼 ==================== -->
+  <section class="apply" id="apply">
+    <div class="wrap">
+      <h2 class="apply__title reveal">AI 서술형 첨삭<br>가장 먼저 경험해 보세요</h2>
+      <p class="apply__sub reveal">
+        아래 베타 버전 체험 신청서 작성 후 입력해 주시면<br>
+        확인 후 개별 안내 드리고 있습니다.
+      </p>
+
+      <!-- 타입폼 (베타테스터_모집)
+           · Z9HWo4hh = 폼 ID. 폼을 바꾸려면 이 값만 교체하세요.
+           · data-tf-hide-headers   : 상단 진행바 숨김
+           · data-tf-hide-footer    : 하단 바(화살표) 숨김
+           · data-tf-inline-on-mobile : 모바일에서 전체화면으로 안 튀고 그대로 박히게 -->
+      <div class="form-embed reveal">
+        <div data-tf-widget="Z9HWo4hh"
+             data-tf-hide-headers
+             data-tf-hide-footer
+             data-tf-inline-on-mobile></div>
+      </div>
+      <script src="https://embed.typeform.com/next/embed.js"></script>
+      <noscript>
+        <p class="apply__sub">
+          신청서가 보이지 않으면
+          <a href="https://form.typeform.com/to/Z9HWo4hh"
+             target="_blank" rel="noopener" style="color:var(--primary);text-decoration:underline">
+            여기를 눌러 새 창에서 작성</a>해 주세요.
+        </p>
+      </noscript>
+    </div>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <div class="footer__inner">
+    <a class="footer__logo" href="https://www.matholic.com/" target="_blank" rel="noopener" aria-label="매쓰홀릭 홈으로 이동"><img src="images/logo.webp" alt="매쓰홀릭"></a>
+    <div class="footer__hr"></div>
+    <div class="footer__contact">
+      <div class="left">
+        <span class="fc-item"><svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.6 10.8a15 15 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.24 11 11 0 0 0 3.5.56 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1 11 11 0 0 0 .56 3.5 1 1 0 0 1-.24 1l-2.22 2.3Z" fill="#66687A"/></svg>1588-9034</span>
+        <span class="fc-item"><svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="5" width="19" height="14" rx="2" stroke="#66687A" stroke-width="1.7" fill="none"/><path d="M3 6.5 12 13l9-6.5" stroke="#66687A" stroke-width="1.7" fill="none"/></svg>help@matholic.net</span>
+        <span class="fc-item"><svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12Z" stroke="#66687A" stroke-width="1.7" fill="none"/><circle cx="12" cy="10" r="2.6" stroke="#66687A" stroke-width="1.7" fill="none"/></svg>서울특별시 강남구 남부순환로351길 4, STAY 77, 3층</span>
+      </div>
+      <div class="store-row">
+        <a class="store-btn" href="https://play.google.com/store/apps/details?id=com.matholic" target="_blank" rel="noopener" aria-label="Google Play"><svg width="15" height="16" viewBox="0 0 18 20" aria-hidden="true"><polygon points="1,1 6,10 1,10" fill="#00C3FF"/><polygon points="1,1 6,10 17,10" fill="#FFCE00"/><polygon points="1,19 6,10 17,10" fill="#FF3A44"/><polygon points="1,19 6,10 1,10" fill="#00F076"/></svg>Google Play</a>
+        <a class="store-btn" href="https://apps.apple.com/app/matholic" target="_blank" rel="noopener" aria-label="App Store"><svg width="14" height="16" viewBox="0 0 384 512" aria-hidden="true"><path fill="#fff" d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/></svg>Apple Store</a>
+      </div>
+    </div>
+    <div class="footer__hr"></div>
+    <div class="footer__bottom">
+      <div class="footer__corp">
+        <nav class="footer__sns" aria-label="소셜 미디어">
+          <a href="https://blog.naver.com/ilovematholic" target="_blank" rel="noopener" aria-label="네이버 블로그"><svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><rect width="30" height="30" rx="7" fill="#66687A"/><path d="M11 9h3.4l3 4.3V9H21v12h-3.4l-3-4.3V21H11V9Z" fill="#fff"/></svg></a>
+          <a href="https://www.youtube.com/channel/UC0f2occwFdAosou2Ds29AUw" target="_blank" rel="noopener" aria-label="유튜브"><svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><rect width="30" height="30" rx="7" fill="#66687A"/><path d="M12 11l7 4-7 4v-8Z" fill="#fff"/></svg></a>
+          <a href="https://www.facebook.com/ilovematholic" target="_blank" rel="noopener" aria-label="페이스북"><svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><rect width="30" height="30" rx="7" fill="#66687A"/><path d="M16.5 22v-7h2.2l.3-2.6h-2.5v-1.6c0-.75.2-1.26 1.3-1.26h1.3V7.2c-.6-.08-1.3-.12-2-.12-2 0-3.4 1.2-3.4 3.5v1.9H11.5V15h2v7h3Z" fill="#fff"/></svg></a>
+          <a href="https://www.instagram.com/matholic/" target="_blank" rel="noopener" aria-label="인스타그램"><svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><rect width="30" height="30" rx="7" fill="#66687A"/><rect x="9" y="9" width="12" height="12" rx="4" stroke="#fff" stroke-width="1.8" fill="none"/><circle cx="15" cy="15" r="3" stroke="#fff" stroke-width="1.8" fill="none"/><circle cx="18.6" cy="11.4" r="1" fill="#fff"/></svg></a>
+        </nav>
+        <p class="name">(주)매쓰홀릭</p>
+        <div class="meta"><span>대표이사 강지훈, 김영희</span><span class="div"></span><span>사업자등록번호 119-86-42991</span><span class="div"></span><span>통신판매업신고 2025-서울강남-04724</span></div>
+        <p class="copy">© Matholic Inc. 2011-2026 All rights reserved.</p>
+      </div>
+      <div class="footer__policy">
+        <a href="https://www.matholic.com/policy/service" target="_blank" rel="noopener">이용약관</a><span class="div"></span>
+        <a href="https://www.matholic.com/policy/privacy" target="_blank" rel="noopener">개인정보처리방침</a><span class="div"></span>
+        <a href="https://www.ftc.go.kr/bizCommPop.do?wrkr_no=1198642991" target="_blank" rel="noopener">사업자정보</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+/* ── 히어로 롤링 워드 ──────────────────────────────────────────
+   단어 3개가 2.2초마다 한 칸씩 올라가며, 가운데 칸에 온 단어만
+   크고 진해집니다. 속도를 바꾸려면 INTERVAL 값만 수정하세요. */
+(function () {
+  var INTERVAL = 2200;   /* 단어가 바뀌는 간격 (ms) */
+  var SLIDE    = 620;    /* 올라가는 애니메이션 시간 (ms, CSS와 맞춤) */
+
+  var rot = document.querySelector('.rotator');
+  if (!rot) return;
+  var list  = rot.querySelector('.rotator__list');
+  var items = list.children;
+  var WORDS = 3;
+  var step  = 0;
+
+  function paint() {
+    var center = (step + 1) % WORDS;          /* 가운데 칸에 오는 단어 */
+    for (var i = 0; i < items.length; i++) {
+      items[i].classList.toggle('is-center', i % WORDS === center);
+    }
+  }
+  paint();
+
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  setInterval(function () {
+    step++;
+    list.style.transition = '';
+    list.style.transform = 'translateY(' + (-step * (100 / 6)) + '%)';
+    paint();
+
+    if (step === WORDS) {                     /* 한 바퀴 → 티 안 나게 원위치 */
+      setTimeout(function () {
+        list.style.transition = 'none';
+        list.style.transform  = 'translateY(0%)';
+        step = 0;
+        paint();
+        void list.offsetHeight;               /* 강제 리플로우 */
+        list.style.transition = '';
+      }, SLIDE + 20);
+    }
+  }, INTERVAL);
+})();
+
+/* 스크롤 시 섹션 부드럽게 등장 */
+(function () {
+  var items = document.querySelectorAll('.reveal');
+  if (!('IntersectionObserver' in window)) {
+    items.forEach(function (el) { el.classList.add('is-in'); });
+    return;
+  }
+  var io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (e) {
+      if (e.isIntersecting) { e.target.classList.add('is-in'); io.unobserve(e.target); }
+    });
+  }, { threshold: 0.12, rootMargin: '0px 0px -8% 0px' });
+  items.forEach(function (el) { io.observe(el); });
+})();
+</script>
+
+</body>
+</html>
